@@ -1,0 +1,9 @@
+[target.thumbv6m-none-eabi] # <-change for your platform
+#runner = 'probe-rs run --chip STM32F031K6Tx' # <- change for your chip
+runner = "elf2uf2-rs --deploy"
+
+[build]
+target = "thumbv6m-none-eabi" # <-change for your platform
+
+[env]
+DEFMT_LOG = "trace" # <- can change to info, warn, or error
