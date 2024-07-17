@@ -51,11 +51,17 @@ impl<'d, T: pio::Instance, const SM: usize> PioEncoder<'d, T, SM> {
         index: usize,
         pin_a: impl PioPin,
         pin_b: impl PioPin,
+        pullup: bool
     ) -> Self {
-        let pin_a = pio.make_pio_pin(pin_a);
-        let pin_b = pio.make_pio_pin(pin_b);
+        let mut pin_a = pio.make_pio_pin(pin_a);
+        let mut pin_b = pio.make_pio_pin(pin_b);
         
         sm.set_pin_dirs(pio::Direction::In, &[&pin_a, &pin_b]);
+
+        if pullup {
+            pin_a.set_pull(Pull::Up);
+            pin_b.set_pull(Pull::Up);
+        }
         
         let prg = pio_proc::pio_asm!("wait 1 pin 1", "wait 0 pin 1", "in pins, 2", "push",);
         
@@ -141,21 +147,21 @@ async fn main(spawner: Spawner) {
 
 
     //Buttons
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(),  7, AnyPin::from(p.PIN_7))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(),  8, AnyPin::from(p.PIN_8))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(),  9, AnyPin::from(p.PIN_9))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 10, AnyPin::from(p.PIN_10))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 11, AnyPin::from(p.PIN_11))));
-    // unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 16, AnyPin::from(p.PIN_16))));
-    // unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 17, AnyPin::from(p.PIN_17))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 18, AnyPin::from(p.PIN_18))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 19, AnyPin::from(p.PIN_19))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 22, AnyPin::from(p.PIN_22))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 0, AnyPin::from(p.PIN_7))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 1, AnyPin::from(p.PIN_8))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 2, AnyPin::from(p.PIN_9))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 3, AnyPin::from(p.PIN_10))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 4, AnyPin::from(p.PIN_11))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 5, AnyPin::from(p.PIN_16))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 6, AnyPin::from(p.PIN_17))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 7, AnyPin::from(p.PIN_18))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 8, AnyPin::from(p.PIN_19))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 9, AnyPin::from(p.PIN_22))));
 
     //Encoders
     let Pio { mut common, sm0, sm1, .. } = Pio::new(p.PIO0, Irqs);
-    let mut encoder_a = PioEncoder::new(&mut common, sm0, 0, p.PIN_14, p.PIN_15);
-    let mut encoder_b = PioEncoder::new(&mut common, sm1, 1, p.PIN_16, p.PIN_17);
+    let mut encoder_a = PioEncoder::new(&mut common, sm0, 0, p.PIN_14, p.PIN_15, false);
+    let mut encoder_b = PioEncoder::new(&mut common, sm1, 1, p.PIN_2, p.PIN_3, true);
     // unwrap!(spawner.spawn(encoder(CHANNEL.sender(), 123, &mut encoder_a)));
 
     let adc0: adc::Adc<'_, Async> = adc::Adc::new( p.ADC, Irqs, adc::Config::default());
