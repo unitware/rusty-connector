@@ -147,25 +147,25 @@ async fn main(spawner: Spawner) {
 
 
     //Buttons
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 0, AnyPin::from(p.PIN_7))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 1, AnyPin::from(p.PIN_8))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 2, AnyPin::from(p.PIN_9))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 3, AnyPin::from(p.PIN_10))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 4, AnyPin::from(p.PIN_11))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 5, AnyPin::from(p.PIN_16))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 6, AnyPin::from(p.PIN_17))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 7, AnyPin::from(p.PIN_18))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 8, AnyPin::from(p.PIN_19))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 9, AnyPin::from(p.PIN_22))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 0, AnyPin::from(p.PIN_0))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 1, AnyPin::from(p.PIN_1))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 2, AnyPin::from(p.PIN_2))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 3, AnyPin::from(p.PIN_3))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 4, AnyPin::from(p.PIN_4))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 5, AnyPin::from(p.PIN_5))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 6, AnyPin::from(p.PIN_6))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 7, AnyPin::from(p.PIN_9))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 8, AnyPin::from(p.PIN_10))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 9, AnyPin::from(p.PIN_11))));
 
     //Encoders
     let Pio { mut common, sm0, sm1, .. } = Pio::new(p.PIO0, Irqs);
-    let mut encoder_a = PioEncoder::new(&mut common, sm0, 0, p.PIN_14, p.PIN_15, false);
-    let mut encoder_b = PioEncoder::new(&mut common, sm1, 1, p.PIN_2, p.PIN_3, true);
+    let mut encoder_a = PioEncoder::new(&mut common, sm0, 0, p.PIN_12, p.PIN_13, false);
+    let mut encoder_b = PioEncoder::new(&mut common, sm1, 1, p.PIN_16, p.PIN_17, true);
     // unwrap!(spawner.spawn(encoder(CHANNEL.sender(), 123, &mut encoder_a)));
 
     let adc0: adc::Adc<'_, Async> = adc::Adc::new( p.ADC, Irqs, adc::Config::default());
-    unwrap!(spawner.spawn( adc_reader(CHANNEL.sender(), adc0, p.PIN_26, p.PIN_27, p.PIN_28)));
+    unwrap!(spawner.spawn( adc_reader(CHANNEL.sender(), adc0, p.PIN_26, p.PIN_27, p.PIN_28, p.PIN_29)));
 
     loop {
         class.wait_connection().await;
@@ -341,7 +341,8 @@ async fn adc_reader(control: channel::Sender<'static, ThreadModeRawMutex, AppEve
                     mut adc: Adc<'static, Async>,
                     adc_0: embassy_rp::peripherals::PIN_26,
                     adc_1: embassy_rp::peripherals::PIN_27,
-                    adc_2: embassy_rp::peripherals::PIN_28)
+                    adc_2: embassy_rp::peripherals::PIN_28,
+                    adc_3: embassy_rp::peripherals::PIN_29)
 {
     let mut ticker = Ticker::every(Duration::from_millis(50));
 
@@ -349,14 +350,15 @@ async fn adc_reader(control: channel::Sender<'static, ThreadModeRawMutex, AppEve
             adc::Channel::new_pin(adc_0, Pull::None),
             adc::Channel::new_pin(adc_1, Pull::None),
             adc::Channel::new_pin(adc_2, Pull::None),
+            adc::Channel::new_pin(adc_3, Pull::None),
         ];
 
-    let mut reported = [0; 3];
+    let mut reported = [0; 4];
 
     loop {
         ticker.next().await;
 
-        for n in 0..3 {
+        for n in 0..4 {
             let reading = adc.read(&mut chan[n]).await.unwrap() as i32;
             let reading = reading >> 2;
 
