@@ -79,8 +79,8 @@ impl<'d, T: pio::Instance, const SM: usize> PioEncoder<'d, T, SM> {
     pub async fn read(&mut self) -> (Direction, usize) {
         loop {
             match self.sm.rx().wait_pull().await {
-                0 => return (Direction::Clockwise, self.index),
-                1 => return (Direction::CounterClockwise, self.index),
+                0 => return (Direction::CounterClockwise, self.index),
+                1 => return (Direction::Clockwise, self.index),
                 _ => {}
             }
         }
@@ -148,15 +148,15 @@ async fn main(spawner: Spawner) {
 
     //Buttons
     unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 0, AnyPin::from(p.PIN_0))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 1, AnyPin::from(p.PIN_1))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 2, AnyPin::from(p.PIN_2))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 3, AnyPin::from(p.PIN_3))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 4, AnyPin::from(p.PIN_4))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 5, AnyPin::from(p.PIN_5))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 6, AnyPin::from(p.PIN_6))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 7, AnyPin::from(p.PIN_9))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 8, AnyPin::from(p.PIN_10))));
-    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 9, AnyPin::from(p.PIN_11))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 5, AnyPin::from(p.PIN_1))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 6, AnyPin::from(p.PIN_2))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 1, AnyPin::from(p.PIN_3))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 7, AnyPin::from(p.PIN_4))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 2, AnyPin::from(p.PIN_5))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 8, AnyPin::from(p.PIN_6))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 3, AnyPin::from(p.PIN_9))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 9, AnyPin::from(p.PIN_10))));
+    unwrap!(spawner.spawn(button_reader(CHANNEL.sender(), 4, AnyPin::from(p.PIN_11))));
 
     //Encoders
     let Pio { mut common, sm0, sm1, .. } = Pio::new(p.PIO0, Irqs);
@@ -365,7 +365,7 @@ async fn adc_reader(control: channel::Sender<'static, ThreadModeRawMutex, AppEve
             if (reported[n] - reading).abs() > 2 {
             // if reported[n] != reading {
                 reported[n] = reading;
-                control.send(AppEvent::ADC(n as u8, reading as u16)).await;
+                control.send(AppEvent::ADC(n as u8, 1024 - reading as u16)).await;
             }
         }        
     }                
